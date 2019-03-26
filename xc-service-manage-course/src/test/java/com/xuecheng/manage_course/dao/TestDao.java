@@ -14,6 +14,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.sound.midi.Soundbank;
 import java.util.Optional;
@@ -35,6 +36,8 @@ public class TestDao {
     CourseDictionaryRepository courseDictionaryRepository;
     @Autowired
     CategoryMapper categoryMapper;
+    @Autowired
+    CoursePicRepository coursePicRepository;
     @Test
     public void testCourseBaseRepository(){
         Optional<CourseBase> optional = courseBaseRepository.findById("402885816240d276016240f7e5000002");
@@ -75,5 +78,12 @@ public class TestDao {
     public void testCategory(){
         CategoryNode category = categoryMapper.findCategory();
         System.out.println(category);
+    }
+
+    @Test
+    @Transactional
+    public void testDelete(){
+        long code = coursePicRepository.deleteCoursePicByCourseid("297e7c7c62b888f00162b8a7dec20000");
+        System.out.println(code);
     }
 }
