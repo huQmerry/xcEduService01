@@ -1,14 +1,20 @@
 package com.xuecheng.manage_course.service;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import com.xuecheng.framework.domain.course.CourseBase;
 import com.xuecheng.framework.domain.course.Teachplan;
+import com.xuecheng.framework.domain.course.ext.CourseInfo;
 import com.xuecheng.framework.domain.course.ext.TeachplanNode;
+import com.xuecheng.framework.domain.course.request.CourseListRequest;
+import com.xuecheng.framework.domain.system.SysDictionary;
+import com.xuecheng.framework.domain.system.SysDictionaryValue;
 import com.xuecheng.framework.exception.ExceptionCast;
 import com.xuecheng.framework.model.response.CommonCode;
+import com.xuecheng.framework.model.response.QueryResponseResult;
+import com.xuecheng.framework.model.response.QueryResult;
 import com.xuecheng.framework.model.response.ResponseResult;
-import com.xuecheng.manage_course.dao.CourseBaseRepository;
-import com.xuecheng.manage_course.dao.TeachplanMapper;
-import com.xuecheng.manage_course.dao.TeachplanRepository;
+import com.xuecheng.manage_course.dao.*;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +34,12 @@ public class CourseService {
 
     @Autowired
     TeachplanRepository teachplanRepository;
+
+    @Autowired
+    CourseMapper courseMapper;
+
+    @Autowired
+    CourseDictionaryRepository dictionaryRepository;
 
     public TeachplanNode findTeachplanList(String courseId){
 
@@ -84,12 +96,41 @@ public class CourseService {
             teachplanRoot.setCourseid(courseId);
             teachplanRoot.setPname(courseBase.getName());
             teachplanRoot.setParentid("0");
-            teachplanRoot.setGrade("1");   //1级
-            teachplanRoot.setStatus("0");  //未发布
+            teachplanRoot.setGrade("1");    //1级
+            teachplanRoot.setStatus("0");   //未发布
             teachplanRepository.save(teachplanRoot);
             return teachplanRoot.getId();
         }
         Teachplan teachplan = teachplanList.get(0);
         return teachplan.getId();
     }
+
+    /**
+     * 查询课程列表
+     */
+    public QueryResponseResult findCourseListPage(int page, int size, CourseListRequest courseListRequest){
+        PageHelper.startPage(page,size);
+        Page<CourseInfo> courseListPage = courseMapper.findCourseListPage();
+        if(courseListPage == null){
+            return new QueryResponseResult(CommonCode.FAIL,null);
+        }
+
+        QueryResult<CourseInfo> result = new QueryResult<>();
+        result.setList(courseListPage);
+        result.setTotal(courseListPage.getTotal());
+        return new QueryResponseResult(CommonCode.SUCCESS,result);
+    }
+
+    /**
+     * 课程等级和学习模式
+     */
+    public SysDictionary getDictionary(String type){
+        if(type == null){
+            return null;
+        }
+        SysDictionary sysDictionary = dictionaryRepository.findBydType(type);
+        return sysDictionary;
+    }
+
+
 }
